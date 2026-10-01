@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Comptoir des Tisaniers</title>
+<style>
+:root{--bg:#f4f1e8;--card:#fffdf6;--ink:#2b3a2e;--mute:#6b7a6c;--acc:#3f7d58;--line:#ddd6c2;--chip:#e8e3d0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141b16;--card:#1d2720;--ink:#e6eadb;--mute:#93a595;--acc:#7fc79a;--line:#2e3d32;--chip:#26332a}}
+:root[data-theme="dark"]{--bg:#141b16;--card:#1d2720;--ink:#e6eadb;--mute:#93a595;--acc:#7fc79a;--line:#2e3d32;--chip:#26332a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.45}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+h1{margin:0;font-size:1.9rem}
+.sub{color:var(--mute);margin:4px 0 16px;font-style:italic}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+input,select{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+input{flex:1;min-width:180px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font:inherit;font-size:.9rem;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+.chip.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.count{color:var(--mute);font-size:.9rem;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.name{font-weight:bold;font-size:1.08rem}
+.price{white-space:nowrap;color:var(--acc);font-weight:bold}
+.desc{font-size:.95rem}
+.desc b{color:var(--acc)}
+.tier{font-size:.75rem;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.empty{padding:30px;text-align:center;color:var(--mute)}
+</style></head><body><main>
+<h1>🌿 Le Comptoir des Tisaniers</h1>
+<p class="sub">Herbes, fleurs, mousses et racines du Cormanthor et d'ailleurs</p>
+<div class="bar">
+<input id="q" type="search" placeholder="Chercher un ingrédient, un lieu, une couleur…">
+<select id="s"><option value="p">Prix croissant</option><option value="pd">Prix décroissant</option><option value="a">Ordre alphabétique</option></select>
+</div>
+<div class="chips" id="chips"></div>
+<div class="count" id="n"></div>
+<div class="grid" id="g"></div>
+</main>
+<script>
+const D=[
+["Menthe sauvage","Petites feuilles vert sombre à l'odeur fraîche et pénétrante, récoltées dans les clairières autour de **Myth Drannor**.",1],
+["Camomille dorée","Minuscules fleurs blanches au cœur jaune, abondantes le long des chemins forestiers du **Cormanthor**.",2],
+["Ortie argentée","Ortie aux feuilles légèrement argentées, commune au pied des vieux arbres du **Cormanthor**.",2],
+["Thym des clairières","Petite plante ligneuse très odorante poussant dans les zones dégagées autour de **Pierre-Levée**.",2],
+["Mélisse citronnée","Feuilles tendres dégageant une forte senteur de citron lorsqu'on les froisse.",2],
+["Lavande des bois","Fleurs mauves au parfum résineux, fréquemment récoltées aux abords de la **Colline de Happe-dents**.",3],
+["Sauge des sous-bois","Feuilles gris-vert épaisses couvertes d'un fin duvet, communes dans les sous-bois relativement secs.",3],
+["Reine-des-prés","Longues hampes portant une multitude de petites fleurs blanc crème, poussant près des cours d'eau.",3],
+["Églantier sauvage","Fruits rouges séchés récoltés sur les lisières occidentales du **Cormanthor**, dans la région de **Valombre**.",3],
+["Gueule-de-loup de Cormanthor","Fleur colorée qui pousse dans les clairières et le long des anciennes voies elfiques.",4],
+["Mousse ivoire","Mousse pâle et très douce appréciant les troncs humides des profondeurs du **Cormanthor**.",4],
+["Baie-renard","Baie jaune semblable à un raisin, grasse au toucher et à l'étrange odeur de viande cuite.",4],
+["Fougère-de-lune","Fougère aux frondes pâles prenant un reflet argenté sous la lune, commune près de **Colline du Lever-de-Lune**.",5],
+["Racine de rosépine","Tubercule charnu provenant d'un petit pin dont chaque aiguille porte une minuscule fleur rose ou blanche.",5],
+["Herbe-zèbre","Longue herbe parcourue de bandes claires irrégulières, trouvée dans les clairières orientales du **Cormanthor**.",5],
+["Feuille de cèdre bleu","Aiguilles bleu-vert provenant de grands cèdres anciens poussant au nord de **Myth Drannor**.",6],
+["Medquat","Petit fruit forestier à la chair ferme et au parfum légèrement épicé, récolté dans les parties les plus anciennes du **Cormanthor**.",6],
+["Fleur de Ninnie","Fleur forestière discrète aux pétales épais couleur crème, que l'on trouve près d'**Arbres Enchevêtrés**.",7],
+["Écorce de chêne-cloche","Fins copeaux d'un chêne rare dont les branches produisent un bruissement presque musical sous le vent.",8],
+["Lichen de brume","Lichen gris bleuté récolté sur les arbres des zones constamment humides proches de la **rivière Duathamper**.",8],
+["Rosée d'Ashaba","Petite fleur bleu pâle poussant sur les berges de la rivière **Ashaba**.",9],
+["Trèfle étoilé","Trèfle forestier dont les cinq folioles dessinent une petite étoile, recherché autour des ruines elfiques.",10],
+["Mousse de clair-de-lune","Mousse bleu pâle légèrement luminescente après le crépuscule, récoltée près du **lac Sember**.",20],
+["Tintinabulette","Fleur translucide en forme de petite cloche, caractéristique des bois entourant **Semberholme**.",25],
+["Larme de dryade","Petite fleur blanche et pendante apparaissant au pied d'arbres particulièrement anciens.",30],
+["Feuille du Mythal","Plante aux feuilles veinées de bleu poussant dans les zones encore imprégnées par l'ancienne magie de **Myth Drannor**.",35],
+["Lys d'Oacenth","Lys bleu et blanc poussant dans les zones humides proches des ruines de **Myth Drannor**.",40],
+["Mousse des pierres chantantes","Mousse turquoise colonisant certaines maçonneries elfiques abandonnées.",45],
+["Étoile fanée","Fleur forestière à six pétales vert pâle disposés en étoile parfaite, trouvée dans les bosquets épargnés par les bûcherons.",50],
+["Orchidée de Sélune","Orchidée blanche qui ne déploie ses pétales qu'à la tombée de la nuit, particulièrement réputée autour de **Semberholme**.",55],
+["Fougère des Voix Perdues","Grande fougère bleu sombre provenant des secteurs sauvages et peu fréquentés du sud-ouest du **Cormanthor**.",60],
+["Lierre d'Arbres Enchevêtrés","Lierre aux larges feuilles vert sombre dont les tiges s'enroulent étroitement autour des arbres du village d'**Arbres Enchevêtrés**.",65],
+["Sarphilette","Lierre fin aux feuilles vert sombre veinées d'argent poussant sur certaines ruines antiques.",70],
+["Rose de la Folie d'Abarath","Rose sauvage d'un rouge très sombre, récoltée avec difficulté (épines enchantées) dans les bois entourant la **Folie d'Abarath**.",80],
+["Fleur des Trois Lunes","Fleur dont les trois grands pétales nacrés se replient totalement pendant la journée. Quelques spécimens poussent près de la **Forêt Engloutie**.",90],
+["Lotus du Mythal","Petit lotus turquoise trouvé dans quelques bassins anciens alimentés par les eaux parcourant les ruines de **Myth Drannor**.",100],
+["Étoile de la Mer de Lune","Fleur rarissime, blanche au centre et progressivement bleue à l'extrémité des pétales. On dit qu'elle pousse dans les profondeurs sous la Mer de Lune.",150],
+["Mousse mythalline","Mousse bleu-vert scintillante poussant exceptionnellement sur des pierres saturées de l'ancienne magie de **Myth Drannor**.",200],
+["Orchidée des Ruines","Orchidée noire veinée d'or qui ne pousse que dans quelques secteurs reculés et dangereux du **Glacier de la Guivre Blanche**.",250],
+["Fleur du Premier Mythal","Plante légendaire aux pétales bleu turquoise translucides, que les tisaniers prétendent issue des jardins des premiers Hauts Elfes de **Myth Drannor**.",500]];
+const T=[["Tous",0,1e9],["Communs (1–5)",1,5],["Peu courants (6–30)",6,30],["Rares (35–100)",35,100],["Légendaires (150+)",150,1e9]];
+const tierOf=p=>p<=5?"Commun":p<=30?"Peu courant":p<=100?"Rare":"Légendaire";
+let ti=0;
+const $=id=>document.getElementById(id);
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function render(){
+ const q=norm($("q").value.trim()),s=$("s").value,[,lo,hi]=T[ti];
+ let r=D.filter(d=>d[2]>=lo&&d[2]<=hi&&(!q||norm(d[0]+" "+d[1]).includes(q)));
+ r.sort((a,b)=>s=="a"?a[0].localeCompare(b[0],"fr"):s=="pd"?b[2]-a[2]:a[2]-b[2]);
+ $("n").textContent=r.length+" ingrédient"+(r.length>1?"s":"");
+ $("g").innerHTML=r.length?r.map(d=>`<div class="card"><div class="top"><span class="name">${esc(d[0])}</span><span class="price">${d[2]} po</span></div><div class="tier">${tierOf(d[2])}</div><div class="desc">${esc(d[1]).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}</div></div>`).join(""):'<div class="empty">Rien ne correspond à votre recherche.</div>';
+}
+$("chips").innerHTML=T.map((t,i)=>`<button class="chip${i?"":" on"}" data-i="${i}">${t[0]}</button>`).join("");
+$("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;ti=+b.dataset.i;document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b));render()};
+$("q").oninput=render;$("s").onchange=render;render();
+</script></body></html>
