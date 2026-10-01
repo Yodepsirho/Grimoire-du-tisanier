@@ -1,99 +1,119 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Le Comptoir des Tisaniers</title>
+<title>Recettes du Comptoir des Tisaniers</title>
 <style>
 :root{--bg:#f4f1e8;--card:#fffdf6;--ink:#2b3a2e;--mute:#6b7a6c;--acc:#3f7d58;--line:#ddd6c2;--chip:#e8e3d0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141b16;--card:#1d2720;--ink:#e6eadb;--mute:#93a595;--acc:#7fc79a;--line:#2e3d32;--chip:#26332a}}
 :root[data-theme="dark"]{--bg:#141b16;--card:#1d2720;--ink:#e6eadb;--mute:#93a595;--acc:#7fc79a;--line:#2e3d32;--chip:#26332a}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.45}
-main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
-h1{margin:0;font-size:1.9rem}
-.sub{color:var(--mute);margin:4px 0 16px;font-style:italic}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-input,select{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
-input{flex:1;min-width:180px}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.chip{font:inherit;font-size:.9rem;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
-.chip.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
-.count{color:var(--mute);font-size:.9rem;margin-bottom:8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
-.top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
-.name{font-weight:bold;font-size:1.08rem}
-.price{white-space:nowrap;color:var(--acc);font-weight:bold}
-.desc{font-size:.95rem}
-.desc b{color:var(--acc)}
-.tier{font-size:.75rem;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
-.empty{padding:30px;text-align:center;color:var(--mute)}
+main{max-width:760px;margin:0 auto;padding:20px 16px 40px}
+h1{margin:0;font-size:1.8rem}
+.sub{color:var(--mute);margin:4px 0 18px;font-style:italic}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.pick{grid-template-columns:1fr}}
+label{font-size:.85rem;color:var(--mute);display:block;margin-bottom:3px}
+select,button{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);width:100%;box-sizing:border-box}
+button{cursor:pointer;background:var(--acc);color:var(--bg);border-color:var(--acc);margin-top:10px}
+.res{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.res h2{margin:0 0 4px;font-size:1.3rem}
+.tag{display:inline-block;font-size:.78rem;padding:2px 10px;border-radius:99px;background:var(--chip);margin:0 6px 8px 0}
+.none h2{color:var(--mute)}
+.meta{color:var(--mute);font-size:.9rem}
+details{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px}
+summary{cursor:pointer;font-weight:bold}
+.fam{margin:10px 0}.fam b{color:var(--acc)}
+.fx{border-top:1px solid var(--line);padding:8px 0;font-size:.92rem}
+.fx i{color:var(--mute)}
+.bad{margin-top:12px;padding:10px 12px;border-left:3px solid #b3402e;background:var(--chip);border-radius:6px;font-size:.93rem}
 </style></head><body><main>
-<h1>🌿 Le Comptoir des Tisaniers</h1>
-<p class="sub">Herbes, fleurs, mousses et racines du Cormanthor et d'ailleurs</p>
-<div class="bar">
-<input id="q" type="search" placeholder="Chercher un ingrédient, un lieu, une couleur…">
-<select id="s"><option value="p">Prix croissant</option><option value="pd">Prix décroissant</option><option value="a">Ordre alphabétique</option></select>
+<h1>⚗️ Recettes du Comptoir</h1>
+<p class="sub">Deux ingrédients, une infusion : à vous de voir ce qu'elle donne… (effets pour aventuriers de niveau 9 et plus)</p>
+<div class="pick">
+<div><label for="a">Premier ingrédient</label><select id="a"></select></div>
+<div><label for="b">Second ingrédient</label><select id="b"></select></div>
 </div>
-<div class="chips" id="chips"></div>
-<div class="count" id="n"></div>
-<div class="grid" id="g"></div>
+<button id="r">🎲 Mélanger au hasard</button>
+<div class="res" id="out"></div>
+<details><summary>Familles d'ingrédients</summary><div id="fams"></div></details>
+<details><summary>Grimoire des effets (MJ)</summary><div id="fx"></div></details>
 </main>
 <script>
-const D=[
-["Menthe sauvage","Petites feuilles vert sombre à l'odeur fraîche et pénétrante, récoltées dans les clairières autour de **Myth Drannor**.",1],
-["Camomille dorée","Minuscules fleurs blanches au cœur jaune, abondantes le long des chemins forestiers du **Cormanthor**.",2],
-["Ortie argentée","Ortie aux feuilles légèrement argentées, commune au pied des vieux arbres du **Cormanthor**.",2],
-["Thym des clairières","Petite plante ligneuse très odorante poussant dans les zones dégagées autour de **Pierre-Levée**.",2],
-["Mélisse citronnée","Feuilles tendres dégageant une forte senteur de citron lorsqu'on les froisse.",2],
-["Lavande des bois","Fleurs mauves au parfum résineux, fréquemment récoltées aux abords de la **Colline de Happe-dents**.",3],
-["Sauge des sous-bois","Feuilles gris-vert épaisses couvertes d'un fin duvet, communes dans les sous-bois relativement secs.",3],
-["Reine-des-prés","Longues hampes portant une multitude de petites fleurs blanc crème, poussant près des cours d'eau.",3],
-["Églantier sauvage","Fruits rouges séchés récoltés sur les lisières occidentales du **Cormanthor**, dans la région de **Valombre**.",3],
-["Gueule-de-loup de Cormanthor","Fleur colorée qui pousse dans les clairières et le long des anciennes voies elfiques.",4],
-["Mousse ivoire","Mousse pâle et très douce appréciant les troncs humides des profondeurs du **Cormanthor**.",4],
-["Baie-renard","Baie jaune semblable à un raisin, grasse au toucher et à l'étrange odeur de viande cuite.",4],
-["Fougère-de-lune","Fougère aux frondes pâles prenant un reflet argenté sous la lune, commune près de **Colline du Lever-de-Lune**.",5],
-["Racine de rosépine","Tubercule charnu provenant d'un petit pin dont chaque aiguille porte une minuscule fleur rose ou blanche.",5],
-["Herbe-zèbre","Longue herbe parcourue de bandes claires irrégulières, trouvée dans les clairières orientales du **Cormanthor**.",5],
-["Feuille de cèdre bleu","Aiguilles bleu-vert provenant de grands cèdres anciens poussant au nord de **Myth Drannor**.",6],
-["Medquat","Petit fruit forestier à la chair ferme et au parfum légèrement épicé, récolté dans les parties les plus anciennes du **Cormanthor**.",6],
-["Fleur de Ninnie","Fleur forestière discrète aux pétales épais couleur crème, que l'on trouve près d'**Arbres Enchevêtrés**.",7],
-["Écorce de chêne-cloche","Fins copeaux d'un chêne rare dont les branches produisent un bruissement presque musical sous le vent.",8],
-["Lichen de brume","Lichen gris bleuté récolté sur les arbres des zones constamment humides proches de la **rivière Duathamper**.",8],
-["Rosée d'Ashaba","Petite fleur bleu pâle poussant sur les berges de la rivière **Ashaba**.",9],
-["Trèfle étoilé","Trèfle forestier dont les cinq folioles dessinent une petite étoile, recherché autour des ruines elfiques.",10],
-["Mousse de clair-de-lune","Mousse bleu pâle légèrement luminescente après le crépuscule, récoltée près du **lac Sember**.",20],
-["Tintinabulette","Fleur translucide en forme de petite cloche, caractéristique des bois entourant **Semberholme**.",25],
-["Larme de dryade","Petite fleur blanche et pendante apparaissant au pied d'arbres particulièrement anciens.",30],
-["Feuille du Mythal","Plante aux feuilles veinées de bleu poussant dans les zones encore imprégnées par l'ancienne magie de **Myth Drannor**.",35],
-["Lys d'Oacenth","Lys bleu et blanc poussant dans les zones humides proches des ruines de **Myth Drannor**.",40],
-["Mousse des pierres chantantes","Mousse turquoise colonisant certaines maçonneries elfiques abandonnées.",45],
-["Étoile fanée","Fleur forestière à six pétales vert pâle disposés en étoile parfaite, trouvée dans les bosquets épargnés par les bûcherons.",50],
-["Orchidée de Sélune","Orchidée blanche qui ne déploie ses pétales qu'à la tombée de la nuit, particulièrement réputée autour de **Semberholme**.",55],
-["Fougère des Voix Perdues","Grande fougère bleu sombre provenant des secteurs sauvages et peu fréquentés du sud-ouest du **Cormanthor**.",60],
-["Lierre d'Arbres Enchevêtrés","Lierre aux larges feuilles vert sombre dont les tiges s'enroulent étroitement autour des arbres du village d'**Arbres Enchevêtrés**.",65],
-["Sarphilette","Lierre fin aux feuilles vert sombre veinées d'argent poussant sur certaines ruines antiques.",70],
-["Rose de la Folie d'Abarath","Rose sauvage d'un rouge très sombre, récoltée avec difficulté (épines enchantées) dans les bois entourant la **Folie d'Abarath**.",80],
-["Fleur des Trois Lunes","Fleur dont les trois grands pétales nacrés se replient totalement pendant la journée. Quelques spécimens poussent près de la **Forêt Engloutie**.",90],
-["Lotus du Mythal","Petit lotus turquoise trouvé dans quelques bassins anciens alimentés par les eaux parcourant les ruines de **Myth Drannor**.",100],
-["Étoile de la Mer de Lune","Fleur rarissime, blanche au centre et progressivement bleue à l'extrémité des pétales. On dit qu'elle pousse dans les profondeurs sous la Mer de Lune.",150],
-["Mousse mythalline","Mousse bleu-vert scintillante poussant exceptionnellement sur des pierres saturées de l'ancienne magie de **Myth Drannor**.",200],
-["Orchidée des Ruines","Orchidée noire veinée d'or qui ne pousse que dans quelques secteurs reculés et dangereux du **Glacier de la Guivre Blanche**.",250],
-["Fleur du Premier Mythal","Plante légendaire aux pétales bleu turquoise translucides, que les tisaniers prétendent issue des jardins des premiers Hauts Elfes de **Myth Drannor**.",500]];
-const T=[["Tous",0,1e9],["Communs (1–5)",1,5],["Peu courants (6–30)",6,30],["Rares (35–100)",35,100],["Légendaires (150+)",150,1e9]];
-const tierOf=p=>p<=5?"Commun":p<=30?"Peu courant":p<=100?"Rare":"Légendaire";
-let ti=0;
+const F={
+A:["🌼 Apaisantes",[["Camomille dorée",2],["Mélisse citronnée",2],["Reine-des-prés",3],["Lavande des bois",3],["Fleur de Ninnie",7],["Rosée d'Ashaba",9],["Larme de dryade",30]]],
+V:["💪 Vigoureuses",[["Menthe sauvage",1],["Thym des clairières",2],["Églantier sauvage",3],["Gueule-de-loup de Cormanthor",4],["Baie-renard",4],["Racine de rosépine",5],["Medquat",6],["Rose de la Folie d'Abarath",80]]],
+E:["🛡️ Écorces et feuillages",[["Ortie argentée",2],["Sauge des sous-bois",3],["Trèfle étoilé",10],["Feuille de cèdre bleu",6],["Écorce de chêne-cloche",8],["Lierre d'Arbres Enchevêtrés",65],["Sarphilette",70]]],
+L:["🌙 Lunaires",[["Fougère-de-lune",5],["Lichen de brume",8],["Mousse de clair-de-lune",20],["Tintinabulette",25],["Orchidée de Sélune",55],["Fougère des Voix Perdues",60],["Fleur des Trois Lunes",90],["Étoile de la Mer de Lune",150],["Orchidée des Ruines",250]]],
+M:["✨ Mythalliques",[["Feuille du Mythal",35],["Lys d'Oacenth",40],["Mousse des pierres chantantes",45],["Lotus du Mythal",100],["Mousse mythalline",200],["Fleur du Premier Mythal",500]]],
+N:["🍃 Inertes",[["Mousse ivoire",4],["Herbe-zèbre",5],["Étoile fanée",50]]]};
+const X={
+AA:["Sérénité",["Avantage aux JS contre charmé et effrayé.","Avantage aux JS contre charmé et effrayé, et met fin à un effet de charme ou d'effroi en cours.","Immunité à charmé et effrayé."]],
+AE:["Rempart de l'esprit",["Avantage aux JS d'Intelligence, de Sagesse et de Charisme.","Avantage aux JS d'Intelligence, de Sagesse et de Charisme, et résistance aux dégâts psychiques.","Avantage aux JS d'Intelligence, de Sagesse et de Charisme, et immunité aux dégâts psychiques."]],
+AL:["Songe lucide",["Au prochain repos long : un songe vague répond à une question (oui, non, peut-être).","Au prochain repos long : un songe précis, comme le sort Augure.","Au prochain repos long : comme le sort Communion."],"jusqu'au prochain repos long"],
+AM:["Éclat apaisant",["Le prochain sort de soin du buveur soigne +1d8 PV.","Le prochain sort de soin du buveur soigne +2d8 PV.","Le prochain sort de soin du buveur soigne +4d8 PV."]],
+AV:["Reprise de souffle",["Soigne 2d8+4 PV.","Soigne 4d8+8 PV.","Soigne 8d8+16 PV et retire un niveau d'épuisement."],"instantané"],
+EE:["Peau d'écorce",["+1 CA.","+1 CA et résistance au poison.","+2 CA et résistance aux dégâts contondants, perforants et tranchants non magiques."]],
+EL:["Voile de brume",["Résistance aux dégâts nécrotiques.","Résistance aux dégâts nécrotiques et radiants.","Résistance aux dégâts nécrotiques et radiants ; ne peut pas être surpris."]],
+EM:["Égide du Mythal",["Avantage aux JS contre les sorts.","Avantage aux JS contre les sorts et résistance aux dégâts des sorts.","Avantage aux JS contre les sorts et résistance aux dégâts des sorts ; de plus, une fois, un sort de niveau 3 ou moins qui cible le buveur est annulé."]],
+EV:["Endurance",["Avantage aux JS de Constitution.","Avantage aux JS de Constitution et résistance au feu ou au froid (au choix à la prise).","Avantage aux JS de Constitution et résistance au feu, au froid, à la foudre et à l'acide."]],
+LL:["Œil de la nuit",["Vision dans le noir 18 m.","Vision dans le noir 36 m et avantage en Discrétion.","Vision lucide 18 m : perçoit les créatures invisibles."]],
+LM:["Vision du Mythal",["Détection de la magie à volonté, sans emplacement.","Détection de la magie à volonté, sans emplacement, et Compréhension des langues à volonté.","Détection de la magie et Compréhension des langues à volonté, sans emplacement, et Clairvoyance une fois."]],
+LV:["Pas de l'ombre",["Vitesse +3 m et avantage en Discrétion.","Vitesse +6 m, avantage en Discrétion, ne laisse aucune trace.","Vitesse +9 m, se cacher en action bonus, ne laisse aucune trace."]],
+MM:["Flux du Mythal",["Récupère un emplacement de sort de niveau 2.","Récupère un emplacement de sort de niveau 4.","Récupère un emplacement de sort de niveau 5."],"instantané"],
+MV:["Surcharge arcanique",["Une fois par tour : +1d6 dégâts à un sort infligeant des dégâts.","Une fois par tour : +2d6 dégâts à un sort infligeant des dégâts.","Une fois par tour : +4d6 dégâts à un sort infligeant des dégâts ; 1 niveau d'épuisement à la fin."]],
+VV:["Coup de fouet",["15 points de vie temporaires.","30 points de vie temporaires.","60 points de vie temporaires et vitesse +3 m."]]};
+const Z={
+AA:"Torpeur : le buveur sombre dans un sommeil profond (inconscient) pendant 1 minute ; il se réveille s'il subit des dégâts ou si on le secoue.",
+AE:"Esprit brouillé : désavantage aux JS d'Intelligence, de Sagesse et de Charisme pendant 1 heure.",
+AL:"Cauchemar : le songe est trompeur ; le buveur ne récupère ni PV ni dés de vie à son repos long et subit {d} dégâts psychiques.",
+AM:"Reflux : le prochain sort de soin du buveur fonctionne, mais le buveur subit lui-même {d} dégâts nécrotiques.",
+AV:"Nausée : le buveur subit {d} dégâts de poison et est empoisonné pendant 1 heure.",
+EE:"Peau de bois cassante : CA −1 et vulnérabilité au feu pendant 1 heure.",
+EL:"Brume dans les yeux : le buveur est aveuglé pendant 1 minute ; JS de Constitution à la fin de chacun de ses tours pour y mettre fin.",
+EM:"Aimant à sorts : désavantage aux JS contre les sorts pendant 1 heure.",
+EV:"Courbatures : 1 niveau d'épuisement et désavantage aux JS de Constitution pendant 1 heure.",
+LL:"Nuit permanente : le buveur est aveuglé pendant 1 heure.",
+LM:"Murmures du Mythal : désavantage aux tests de Perception et aux jets de concentration pendant 1 heure.",
+LV:"Ombre capricieuse : l'ombre du buveur trahit sa position ; désavantage en Discrétion et vitesse −3 m pendant 1 heure.",
+MM:"Décharge : le buveur perd un emplacement de sort (le plus haut niveau dispo, 4 maximum) et subit {d} dégâts de force.",
+MV:"Retour de flamme : le prochain sort du buveur infligeant des dégâts lui inflige aussi {d} dégâts de force, et 1 niveau d'épuisement.",
+VV:"Cœur emballé : le buveur subit {d} dégâts de poison et a désavantage aux jets d'attaque pendant 1 minute."};
+const Y={
+AA:["Bâillement contagieux","Le buveur bâille sans cesse, et ses compagnons aussi. Il a avantage à son prochain test de Persuasion.","f"],
+AE:["Voix de crapaud","La voix du buveur devient grave et rauque pendant 1 heure. Aucun effet mécanique, mais le MJ s'amuse.","f"],
+AL:["Lucioles dans la tête","De petites lueurs colorées flottent autour de la tête du buveur (lumière faible, 1,5 m). Purement esthétique.","f"],
+AV:["Fou rire","Le buveur éclate de rire à tout propos : désavantage aux tests de Discrétion.","b"],
+EE:["Plaques d'urticaire","Le buveur est couvert de plaques rouges : désavantage aux tests de Charisme.","b"],
+EL:["Haleine de brume","Chaque expiration forme un petit nuage glacé. Aucun effet mécanique.","f"],
+EV:["Courbatures légères","Vitesse −1,5 m.","b"],
+LL:["Yeux de chat","Pupilles fendues et brillantes : vision dans le noir 9 m.","f"],
+LV:["Vertiges","Le buveur a désavantage à son prochain jet d'initiative.","b"],
+VV:["Jambes frétillantes","Le buveur ne peut s'empêcher de sautiller : vitesse +1,5 m.","f"],
+AN:["Goût délicieux","Le buveur en redemande, et se sent bien : 5 points de vie temporaires.","f"],
+EN:["Goût de sciure","Le buveur ne sent plus rien : désavantage aux tests de Perception basés sur l'odorat et le goût.","b"],
+LN:["Étoiles dans les yeux","Le regard du buveur reflète les étoiles, même en plein jour. Aucun effet mécanique.","f"],
+MN:["Éternuements d'étincelles","Au pire moment (choix du MJ), le buveur éternue des étincelles : il subit 1d4 dégâts de feu.","b"],
+NV:["Joues rouges","Le buveur transpire à grosses gouttes : avantage aux JS contre les effets de froid.","f"],
+NN:["Eau chaude","Aucun effet… mais le buveur jure que c'était délicieux.","0"]};
+const ya=Object.keys(Y).map(k=>`<div class="fx"><b>${Y[k][0]}</b> <i>(${[...k].map(c=>F[c][0].split(" ")[1]).join(" + ")} : ${Y[k][2]=="b"?"désastre mineur":Y[k][2]=="f"?"amusant":"rien"})</i><br>${Y[k][1]}</div>`).join("");
+const DD=[12,15,18],DI=["2d6","4d6","8d6"],z=(k,t)=>Z[k].replace(/\{d\}/g,DI[t]);
+const TN=["Léger","Marqué","Exceptionnel"],DU=["1 heure","8 heures","24 heures"];
+const I=[];for(const k in F)F[k][1].forEach(([n,p])=>I.push({n,p,f:k}));
 const $=id=>document.getElementById(id);
-const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
-function render(){
- const q=norm($("q").value.trim()),s=$("s").value,[,lo,hi]=T[ti];
- let r=D.filter(d=>d[2]>=lo&&d[2]<=hi&&(!q||norm(d[0]+" "+d[1]).includes(q)));
- r.sort((a,b)=>s=="a"?a[0].localeCompare(b[0],"fr"):s=="pd"?b[2]-a[2]:a[2]-b[2]);
- $("n").textContent=r.length+" ingrédient"+(r.length>1?"s":"");
- $("g").innerHTML=r.length?r.map(d=>`<div class="card"><div class="top"><span class="name">${esc(d[0])}</span><span class="price">${d[2]} po</span></div><div class="tier">${tierOf(d[2])}</div><div class="desc">${esc(d[1]).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}</div></div>`).join(""):'<div class="empty">Rien ne correspond à votre recherche.</div>';
-}
-$("chips").innerHTML=T.map((t,i)=>`<button class="chip${i?"":" on"}" data-i="${i}">${t[0]}</button>`).join("");
-$("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;ti=+b.dataset.i;document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b));render()};
-$("q").oninput=render;$("s").onchange=render;render();
+const opts=()=>Object.keys(F).map(k=>`<optgroup label="${F[k][0]}">`+F[k][1].map(([n])=>`<option value="${I.findIndex(i=>i.n==n)}">${n}</option>`).join("")+"</optgroup>").join("");
+$("a").innerHTML=$("b").innerHTML=opts();$("b").selectedIndex=3;
+function show(){
+ const a=I[$("a").value],b=I[$("b").value],s=a.p+b.p;let h,c="res";
+ const pair=`<div class="meta">${a.n} + ${b.n}</div>`;
+ if(a.f=="N"||b.f=="N"||s<=10){const y=Y[[a.f,b.f].sort().join("")];c+=y[2]=="0"?" none":"";h=`<h2>${y[0]}</h2><span class="tag">Anecdotique</span>${y[2]=="0"?"":'<span class="tag">Durée : 1 heure</span>'}${pair}`+(y[2]=="b"?`<div class="bad"><b>Désastre mineur</b> : ${y[1]}</div>`:`<p>${y[1]}</p>`)}
+ 
+ else{const t=s<=60?0:s<=200?1:2,k=[a.f,b.f].sort().join(""),e=X[k];
+  h=`<h2>${e[0]}</h2><span class="tag">${TN[t]}</span><span class="tag">Durée : ${e[2]||DU[t]}</span>${pair}<p>${e[1][t]}</p><div class="bad"><b>Jet de préparation raté</b> (outils d'herboriste ou Intelligence (Nature), DD ${DD[t]}) : ${z(k,t)}</div>`}
+ $("out").className=c;$("out").innerHTML=h}
+$("a").onchange=$("b").onchange=show;
+$("r").onclick=()=>{$("a").value=Math.floor(Math.random()*I.length);$("b").value=Math.floor(Math.random()*I.length);show()};
+$("fams").innerHTML=Object.keys(F).map(k=>`<div class="fam"><b>${F[k][0]}</b><br>${F[k][1].map(i=>i[0]).join(", ")}</div>`).join("");
+$("fx").innerHTML="<p class='meta'>Effet = familles des deux ingrédients. Puissance selon la somme des prix : ≤10 ou ingrédient inerte : effet anecdotique (amusant ou désastre mineur, sans jet), 11–60 léger, 61–200 marqué, 201+ exceptionnel.</p><p class='meta'><b>Effets anecdotiques</b></p>"+ya+"<p class='meta'><b>Effets selon les familles</b></p>"+Object.keys(X).map(k=>`<div class="fx"><b>${X[k][0]}</b> <i>(${[...k].map(c=>F[c][0].split(" ")[1]).join(" + ")})</i>${X[k][1].map((t,i)=>`<br><b>${TN[i]}</b> (somme ${["11–60","61–200","201+"][i]}, durée ${X[k][2]||DU[i]}) : ${t}<br>&nbsp;&nbsp;↳ <i>Échec (DD ${DD[i]})</i> : ${z(k,i)}`).join("")}</div>`).join("");
+show();
 </script></body></html>
